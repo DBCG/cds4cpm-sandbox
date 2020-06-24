@@ -1,0 +1,14 @@
+version: '3.2'
+services:
+
+  ########################
+  # CQF-Ruler
+  ########################
+  cqf-ruler:
+    image: contentgroup/cqf-ruler:develop
+    environment:
+      - "JAVA_OPTIONS=-Dhapi.properties.R4=/var/lib/jetty/target/config/r4.properties -Dhapi.properties.DSTU3=/var/lib/jetty/target/config/dstu3.properties"
+    volumes:
+      - './config/cqf-ruler:/var/lib/jetty/target/config'
+    ports:
+      - "8080:8080"
