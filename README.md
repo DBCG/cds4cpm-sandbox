@@ -12,13 +12,13 @@ The repository contains documentation and scripts that allow a functioning sandb
 
 Site-specific configuration for the solution may vary, but this repository servers as a reference for where those configuration points are.
 
-**NOTE:** Currently this document only contains information on the Cqf-Ruler - The other services are WIP
-
 ## Prerequisites
 
 [Docker](https://docs.docker.com/get-docker/) version 19+
 
 ## Usage
+
+This project uses a docker-compose file to do all of the above configuration for you automatically. The file is located [here](docker/docker-compose.yml) and demonstrates the usage of the various options.
 
 From the /docker directory, run:
 
@@ -27,7 +27,11 @@ docker-compose pull
 docker-compose up
 ```
 
-The appropriate docker containers will be downloaded and started.
+The appropriate docker containers will be downloaded and started. It may take a several minutes for all the containers to download and start.
+
+You can then browse the smart-launcher to select the correct applications and FHIR server by browsing
+
+[http://smart-launcher.localhost](http://smart-launcher.localhost)
 
 When you're done with the sandbox, the services can be terminated with
 
@@ -36,6 +40,26 @@ docker-compose down
 ```
 
 Detailed information on the `docker-compose` command can be found on the [Docker website](https://docs.docker.com/compose/)
+
+## Architecture
+
+The docker-compose.yml file sets up several containers and links them all together as shown in the diagram below in order to represent the complete system:
+
+![Architecture](assets/architecture.drawio.svg)
+
+The docker-compose.yml file documents how each of those containers are configured to make the overall system work. Certain elements may not be required in each deployment. Specifically, the Smart Launcher will typically be replaced with an EHR's Smart Launch capability, the Cqf-Ruler may be replaced with a site-specific FHIR server or facade, and the Traefik reverse proxy container would be replaced by a given site's networking solution.
+
+The various services will be available at:
+
+[http://smart-launcher.localhost](http://smart-launcher.localhost)
+
+[http://my-pain.localhost](http://my-pain.localhost)
+
+[http://pain-manager.localhost](http://pain-manager.localhost)
+
+[http://cqf-ruler.localhost](http://pain-manager.localhost)
+
+The relevant configuration options that are used for each service are documented below.
 
 ## Configuration
 
@@ -48,8 +72,9 @@ For usage in the CDS4CPM sandbox several specific options need to be enabled:
 
 1. OAuth Redirection to an authorization server
 2. Questionnaire Response extraction
+3. Server base address
 
-Both of these are enabled by setting properties in a configuration file. This configuration file is then mounted into the Docker container where the cqf-ruler can read and load it.
+All of these are enabled by setting properties in a configuration file. This configuration file is then mounted into the Docker container where the cqf-ruler can read and load it.
 
 #### OAuth Redirection
 
@@ -92,6 +117,18 @@ observation.password=
 
 The `observation.endpoint` is where the extracted Observation will be PUT. `observation.username` and `observation.password` are used to configure credentials for that endpoint.
 
+#### Server Address
+
+These properties are inherited from the HAPI FHIR server.
+
+```yaml
+##################################################
+# Server Address
+##################################################
+server_address=http://cqf-ruler.localhost/cqf-ruler-dstu3/fhir/
+server.base=/cqf-ruler-dstu3/fhir
+```
+
 Working examples of the configurations files are located in the [docker/config/cqf-ruler](docker/config/cqf-ruler) folder.
 
 #### Mounting Configuration Files
@@ -127,11 +164,17 @@ docker run \
 contentgroup/cqf-ruler:develop
 ```
 
-## Docker Compose
+### Smart Launcher
 
-This project uses a docker-compose file to do all of the above configuration for you automatically when you run `docker-compose up`. The docker-compose.yml file is located [here](docker/docker-compose.yml) and demonstrates the usage of the various options.
+#### FHIR Servers
 
-Further information on Docker compose files is available [here](https://docs.docker.com/compose/)
+The FHIR servers available are set with environment variables as demonstrated in the docker-compose.yml file.
+
+```yaml
+    environment: 
+      - "FHIR_SERVER_R4=http://cqf-ruler.localhost/cqf-ruler-r4/fhir"
+      - "FHIR_SERVER_R3=http://cqf-ruler.localhost/cqf-ruler-dstu3/fhir"
+```
 
 ## License
 

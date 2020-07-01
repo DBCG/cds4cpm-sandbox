@@ -2,6 +2,28 @@ version: '3.2'
 services:
 
   ########################
+  # MyPain
+  ########################
+  my-pain:
+    image: contentgroup/mypain:develop
+    # Only relevant to reverse proxy configuration
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.mypain.rule=Host(`my-pain.localhost`)"
+      - "traefik.http.routers.mypain.entrypoints=web"
+
+  ########################
+  # PainManager
+  ########################
+  pain-manager:
+    image: contentgroup/painmanager:develop
+    # Only relevant to reverse proxy configuration
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.painmanager.rule=Host(`pain-manager.localhost`)"
+      - "traefik.http.routers.painmanager.entrypoints=web"
+
+  ########################
   # CQF-Ruler
   ########################
   cqf-ruler:
@@ -10,5 +32,42 @@ services:
       - "JAVA_OPTIONS=-Dhapi.properties.R4=/var/lib/jetty/target/config/r4.properties -Dhapi.properties.DSTU3=/var/lib/jetty/target/config/dstu3.properties"
     volumes:
       - './config/cqf-ruler:/var/lib/jetty/target/config'
+    # Only relevant to reverse proxy configuration
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.cqf-ruler.rule=Host(`cqf-ruler.localhost`)"
+      - "traefik.http.routers.cqf-ruler.entrypoints=web"
+
+  ########################
+  # Smart Launcher
+  ########################
+  smart-launcher:
+    image: contentgroup/smart-launcher
+    environment: 
+      - "FHIR_SERVER_R4=http://cqf-ruler.localhost/cqf-ruler-r4/fhir"
+      - "FHIR_SERVER_R3=http://cqf-ruler.localhost/cqf-ruler-dstu3/fhir"
+    # Only relevant to reverse proxy configuration
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.smart-launcher.rule=Host(`smart-launcher.localhost`)"
+      - "traefik.http.routers.smart-launcher.entrypoints=web"
+
+  ########################
+  # Traefik
+  ########################
+  traefik:
+    image: "traefik:v2.2"
+    container_name: "traefik"
+    command:
+      - "--log.level=DEBUG"
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
     ports:
+      - "80:80"
       - "8080:8080"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+
+  
