@@ -6,6 +6,8 @@ services:
   ########################
   my-pain:
     image: contentgroup/mypain:develop
+    ports:
+      - "80"
     # Only relevant to reverse proxy configuration
     labels:
       - "traefik.enable=true"
@@ -17,6 +19,8 @@ services:
   ########################
   pain-manager:
     image: contentgroup/painmanager:develop
+    ports:
+      - "80"
     # Only relevant to reverse proxy configuration
     labels:
       - "traefik.enable=true"
@@ -32,7 +36,11 @@ services:
       - "JAVA_OPTIONS=-Dhapi.properties.R4=/var/lib/jetty/target/config/r4.properties -Dhapi.properties.DSTU3=/var/lib/jetty/target/config/dstu3.properties"
     volumes:
       - './config/cqf-ruler:/var/lib/jetty/target/config'
+    ports:
+      - "8080"
     # Only relevant to reverse proxy configuration
+    links:
+      - "traefik:cqf-ruler.localhost"
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.cqf-ruler.rule=Host(`cqf-ruler.localhost`)"
@@ -46,7 +54,11 @@ services:
     environment: 
       - "FHIR_SERVER_R4=http://cqf-ruler.localhost/cqf-ruler-r4/fhir"
       - "FHIR_SERVER_R3=http://cqf-ruler.localhost/cqf-ruler-dstu3/fhir"
+    ports:
+      - "80"
     # Only relevant to reverse proxy configuration
+    links:
+      - "traefik:cqf-ruler.localhost"
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.smart-launcher.rule=Host(`smart-launcher.localhost`)"
