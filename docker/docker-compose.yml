@@ -8,7 +8,7 @@ services:
     image: contentgroup/mypain:develop
     ports:
       - "80"
-    # Only relevant to reverse proxy configuration
+    # Tells the reverse proxy to expose the container of my-pain.localhost
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.mypain.rule=Host(`my-pain.localhost`)"
@@ -21,7 +21,7 @@ services:
     image: contentgroup/painmanager:develop
     ports:
       - "80"
-    # Only relevant to reverse proxy configuration
+    # Tells the reverse proxy to expose the container of pain-manager.localhost
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.painmanager.rule=Host(`pain-manager.localhost`)"
@@ -35,10 +35,10 @@ services:
     environment:
       - "JAVA_OPTIONS=-Dhapi.properties.R4=/var/lib/jetty/target/config/r4.properties -Dhapi.properties.DSTU3=/var/lib/jetty/target/config/dstu3.properties"
     volumes:
-      - './config/cqf-ruler:/var/lib/jetty/target/config'
+      - './config/cqf-ruler:/var/lib/jetty/target:z'
     ports:
       - "8080"
-    # Only relevant to reverse proxy configuration
+    # Tells the reverse proxy to expose the container of cqf-ruler.localhost
     links:
       - "traefik:cqf-ruler.localhost"
     labels:
@@ -50,13 +50,13 @@ services:
   # Smart Launcher
   ########################
   smart-launcher:
-    image: contentgroup/smart-launcher
+    image: contentgroup/smart-launcher:develop
     environment: 
       - "FHIR_SERVER_R4=http://cqf-ruler.localhost/cqf-ruler-r4/fhir"
       - "FHIR_SERVER_R3=http://cqf-ruler.localhost/cqf-ruler-dstu3/fhir"
     ports:
       - "80"
-    # Only relevant to reverse proxy configuration
+    # Tells the reverse proxy to expose the container of smart-launcher.localhost
     links:
       - "traefik:cqf-ruler.localhost"
     labels:
