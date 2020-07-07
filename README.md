@@ -2,7 +2,7 @@
 
 ## Overview
 
-The [Clinical Decision Support for Chronic Pain Management and Shared Decision-Making IG](https://github.com/cqframework/cds4cpm) (CDS4CPM) is a specification for services and operations that, taken together, allow patients and practitioners collaboratively make decision about chronic pain management.
+The [Clinical Decision Support for Chronic Pain Management and Shared Decision-Making IG](https://github.com/cqframework/cds4cpm) (CDS4CPM) is a specification for services and operations that, taken together, allow patients and practitioners collaboratively make decisions about chronic pain management.
 
 The repository contains documentation and scripts that allow a functioning sandbox demonstrating the overall solution to be stood up. There are several services involved:
 
@@ -11,7 +11,7 @@ The repository contains documentation and scripts that allow a functioning sandb
 * The [CQF-Ruler](https://github.com/DBCG/cqf-ruler), which functions as a FHIR database.
 * The [Smart-Launcher](https://github.com/cqframework/smart-launcher) application, which simulates a launch from an EHR
 
-Site-specific configuration for the solution may vary. This repository servers as a reference for where those configuration points are.
+Site-specific configuration for the solution may vary. This repository serves as a reference for where those configuration points are.
 
 ## Prerequisites
 
@@ -97,6 +97,18 @@ MyPain
 PainManager
 
 `http://pain-manager.localhost/launch.html`
+
+#### Adding Additional Data
+
+The cqf-ruler implements a FHIR Rest API with support for creating, updating, and deleting resources. This endpoint is available at:
+
+`http://cqf-ruler.localhost/cqf-ruler-r4/fhir`
+
+Instructions on how to load new Resources are available at the [Resource Loading](https://github.com/DBCG/cqf-ruler/wiki/Resource-Loading) page on the cqf-ruler wiki.
+
+Additionally, a GUI interface is provided at:
+
+[http://cqf-ruler.localhost/cqf-ruler-r4](http://cqf-ruler.localhost/cqf-ruler-r4)
 
 ## Configuration
 
@@ -201,13 +213,13 @@ docker run \
 contentgroup/cqf-ruler:develop
 ```
 
-This configuration is demonstrated in the in the [docker-compose.yml](docker/docker-compose.yml) file.
+Docker-compose provides a succinct syntax of setting these types of options across multiple containers. This can be seen the in the [docker-compose.yml](docker/docker-compose.yml) file.
 
 ### Smart Launcher
 
 #### FHIR Servers
 
-The FHIR servers available are set with environment variables as demonstrated in the [docker-compose.yml](docker/docker-compose.yml) file.
+The FHIR servers available are set with environment variables:
 
 ```yaml
 environment:
@@ -222,6 +234,27 @@ The base urls expected for the launcher are set with the BASE_URL and CDS_SANDBO
     - "CDS_SANDBOX_URL=http://smart-launcher.localhost"
     - "BASE_URL=http://smart-launcher.localhost"
 ```
+
+This configuration is demonstrated in the in the [docker-compose.yml](docker/docker-compose.yml) file.
+
+## Development
+
+This section is intended for developers working on the cds4cpm sandbox
+
+### Updating Sample Data
+
+The sample data is stored in small H2 databases located at [docker/config/cqf-ruler/h2](docker/config/cqf-ruler/h2). These databases are shared with the cqf-ruler on startup, and are mapped bi-directionally with the host machine. If you need to update the sandbox data, do the following:
+
+1. Start the sandbox with `docker-compose`
+2. Post the required data to the cqf-ruler as described in [Adding Additional Data](#adding-additional-data).
+3. Stop the sandbox
+4. Commit the resulting changes to the database files to the repo.
+
+### Resetting the Sandbox Data
+
+If you want to get back to the state of the sample data as of the latest commit use:
+
+`git restore docker/config/cqf-ruler/h2/*`
 
 ## License
 
