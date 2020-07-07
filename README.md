@@ -137,7 +137,7 @@ The resulting bundle of Observations will be posted to the questionnaireResponse
 
 #### Observation/$transform operation
 
-The transform operation takes a Parameters resource containing a BUndle of Observations and a ConceptMap url.  Examples of these can be found at:
+The transform operation takes a Parameters resource containing a Bundle of Observations and a ConceptMap url.  Examples of these can be found at:
 
 [https://github.com/cqframework/cds4cpm-mypain/blob/develop/examples/exampleObservationBundle.json](https://github.com/cqframework/cds4cpm-mypain/blob/develop/examples/exampleObservationBundle.json)
 
