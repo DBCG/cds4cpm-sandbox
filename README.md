@@ -215,6 +215,14 @@ environment:
   - "FHIR_SERVER_R3=http://cqf-ruler.localhost/cqf-ruler-dstu3/fhir"
 ```
 
+The base urls expected for the launcher are set with the BASE_URL and CDS_SANDBOX_URL environment variables:
+
+```yaml
+  environment: 
+    - "CDS_SANDBOX_URL=http://smart-launcher.localhost"
+    - "BASE_URL=http://smart-launcher.localhost"
+```
+
 ## License
 
 Apache 2.0
