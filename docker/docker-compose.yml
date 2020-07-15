@@ -25,8 +25,6 @@ services:
       - '../services/cqf-ruler/config:/var/lib/jetty/target/config:ro'
     # Shares sample data with the cqf-ruler
       - '../services/cqf-ruler/h2:/var/lib/jetty/target/database/h2:rw'
-    links:
-      - "traefik:cqf-ruler.localhost"
 
   ########################
   # Smart Launcher
@@ -34,12 +32,12 @@ services:
   smart-launcher:
     image: contentgroup/smart-launcher:develop
     environment: 
-      - "FHIR_SERVER_R4=http://cqf-ruler.localhost/cqf-ruler-r4/fhir"
-      - "FHIR_SERVER_R3=http://cqf-ruler.localhost/cqf-ruler-dstu3/fhir"
-      - "CDS_SANDBOX_URL=http://smart-launcher.localhost"
-      - "BASE_URL=http://smart-launcher.localhost"
-    links:
-      - "traefik:cqf-ruler.localhost"
+      - "FHIR_SERVER_R4=http://cqf-ruler.localhost:8888/cqf-ruler-r4/fhir"
+      - "FHIR_SERVER_R3=http://cqf-ruler.localhost:8888/cqf-ruler-dstu3/fhir"
+      - "FHIR_SERVER_R4_INTERNAL=http://cqf-ruler:8080/cqf-ruler-r4/fhir"
+      - "FHIR_SERVER_R3_INTERNAL=http://cqf-ruler:8080/cqf-ruler-dstu3/fhir"
+      - "CDS_SANDBOX_URL=http://smart-launcher.localhost:8888"
+      - "BASE_URL=http://smart-launcher.localhost:8888"
 
   ########################
   # Traefik
@@ -48,7 +46,7 @@ services:
     image: "traefik:v2.2"
     container_name: "traefik"
     ports:
-      - "80:80"
+      - "8888:80"
       - "8080:8080"
     volumes:
       - "../services/traefik/traefik.yaml:/traefik.yaml"
