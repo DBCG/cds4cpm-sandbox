@@ -6,26 +6,12 @@ services:
   ########################
   my-pain:
     image: contentgroup/mypain:develop
-    ports:
-      - "80"
-    # Tells the reverse proxy to expose the container of my-pain.localhost
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.mypain.rule=Host(`my-pain.localhost`)"
-      - "traefik.http.routers.mypain.entrypoints=web"
 
   ########################
   # PainManager
   ########################
   pain-manager:
     image: contentgroup/painmanager:develop
-    ports:
-      - "80"
-    # Tells the reverse proxy to expose the container of pain-manager.localhost
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.painmanager.rule=Host(`pain-manager.localhost`)"
-      - "traefik.http.routers.painmanager.entrypoints=web"
 
   ########################
   # CQF-Ruler
@@ -36,18 +22,11 @@ services:
       - "JAVA_OPTIONS=-Dhapi.properties.R4=/var/lib/jetty/target/config/r4.properties -Dhapi.properties.DSTU3=/var/lib/jetty/target/config/dstu3.properties"
     volumes:
     # Shares configuration with the cqf-ruler
-      - './config/cqf-ruler/config:/var/lib/jetty/target/config:ro'
+      - '../services/cqf-ruler/config:/var/lib/jetty/target/config:ro'
     # Shares sample data with the cqf-ruler
-      - './config/cqf-ruler/h2:/var/lib/jetty/target/database/h2:rw'
-    ports:
-      - "8080"
-    # Tells the reverse proxy to expose the container of cqf-ruler.localhost
+      - '../services/cqf-ruler/h2:/var/lib/jetty/target/database/h2:rw'
     links:
       - "traefik:cqf-ruler.localhost"
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.cqf-ruler.rule=Host(`cqf-ruler.localhost`)"
-      - "traefik.http.routers.cqf-ruler.entrypoints=web"
 
   ########################
   # Smart Launcher
@@ -59,15 +38,8 @@ services:
       - "FHIR_SERVER_R3=http://cqf-ruler.localhost/cqf-ruler-dstu3/fhir"
       - "CDS_SANDBOX_URL=http://smart-launcher.localhost"
       - "BASE_URL=http://smart-launcher.localhost"
-    ports:
-      - "80"
-    # Tells the reverse proxy to expose the container of smart-launcher.localhost
     links:
       - "traefik:cqf-ruler.localhost"
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.smart-launcher.rule=Host(`smart-launcher.localhost`)"
-      - "traefik.http.routers.smart-launcher.entrypoints=web"
 
   ########################
   # Traefik
@@ -75,16 +47,11 @@ services:
   traefik:
     image: "traefik:v2.2"
     container_name: "traefik"
-    command:
-      - "--log.level=DEBUG"
-      - "--api.insecure=true"
-      - "--providers.docker=true"
-      - "--providers.docker.exposedbydefault=false"
-      - "--entrypoints.web.address=:80"
     ports:
       - "80:80"
       - "8080:8080"
     volumes:
-      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+      - "../services/traefik/traefik.yaml:/traefik.yaml"
+      - "../services/traefik/config:/config"
 
   

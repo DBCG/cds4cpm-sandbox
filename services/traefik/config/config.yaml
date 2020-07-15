@@ -1,0 +1,50 @@
+
+http:
+  routers:
+    my-pain:
+      rule: "Host(`my-pain.localhost`)"
+      service: "my-pain"
+      entryPoints: 
+        - "web"
+
+    pain-manager:
+      rule: "Host(`pain-manager.localhost`)"
+      service: "pain-manager"
+      entryPoints: 
+        - "web"
+
+    cqf-ruler:
+      rule: "Host(`cqf-ruler.localhost`)"
+      service: "cqf-ruler"
+      entryPoints: 
+        - "web"
+
+    smart-launcher:
+      rule: "Host(`smart-launcher.localhost`)"
+      service: "smart-launcher"
+      entryPoints: 
+        - "web"
+
+  services:
+    my-pain:
+      loadBalancer:
+        servers:
+          - url: "http://my-pain/"
+
+    pain-manager:
+      loadBalancer:
+        servers:
+          - url: "http://pain-manager/"
+
+    cqf-ruler:
+      loadBalancer:
+        servers:
+          - url: "http://cqf-ruler:8080/"
+
+    smart-launcher:
+      loadBalancer:
+        servers:
+          - url: "http://smart-launcher/"
+
+
+

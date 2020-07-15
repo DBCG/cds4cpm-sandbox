@@ -1,0 +1,16 @@
+log:
+  level: DEBUG
+
+api:
+  insecure: true
+  dashboard: true
+  debug: true
+
+providers:
+  file:
+    directory: /config
+    watch: true
+
+entryPoints:
+  web:
+    address: ":8080"
