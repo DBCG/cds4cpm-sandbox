@@ -51,5 +51,3 @@ services:
     volumes:
       - "../services/traefik/traefik.yaml:/traefik.yaml"
       - "../services/traefik/config:/config"
-
-  
