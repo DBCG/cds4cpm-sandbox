@@ -127,7 +127,7 @@ The extract operation takes a QuestionnaireResponse and returns a bundle of Obse
 
 [https://github.com/cqframework/cds4cpm-mypain/blob/develop/examples/exampleQuestionnaireResponse.json](https://github.com/cqframework/cds4cpm-mypain/blob/develop/examples/exampleQuestionnaireResponse.json)
 
-Post the QuestionnaireResponse as the parameter named "questionnaireResponse" to the operation using a call such as 
+Post the QuestionnaireResponse as the parameter named "questionnaireResponse" to the operation using a call such as
 
 ```html
 POST http://cqf-ruler.localhost/cqf-ruler-r4/fhir/QuestionnaireResponse/$extract
@@ -287,7 +287,7 @@ environment:
 The base urls expected for the launcher are set with the BASE_URL and CDS_SANDBOX_URL environment variables:
 
 ```yaml
-  environment: 
+  environment:
     - "CDS_SANDBOX_URL=http://smart-launcher.localhost"
     - "BASE_URL=http://smart-launcher.localhost"
 ```

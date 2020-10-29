@@ -22,9 +22,12 @@ services:
     # Shares configuration with the cqf-ruler
       - '../services/cqf-ruler/config:/var/lib/jetty/webapps/config:Z'
     # Shares sample data with the cqf-ruler
-      - '../services/cqf-ruler/h2:/var/lib/jetty/target/database/h2:Z'
+      # - '../services/cqf-ruler/h2:/var/lib/jetty/target/database/h2:Z'
     links:
       - "traefik:cqf-ruler.localhost"
+    environment: 
+      - "SERVER_ADDRESS_DSTU3=http://cqf-ruler.localhost/cqf-ruler-dstu3/fhir"
+      - "SERVER_ADDRESS_R4=http://cqf-ruler.localhost/cqf-ruler-r4/fhir"
 
   ########################
   # Smart Launcher
