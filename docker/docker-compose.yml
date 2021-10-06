@@ -17,7 +17,7 @@ services:
   # CQF-Ruler
   ########################
   cqf-ruler:
-    image: contentgroup/cqf-ruler:develop
+    image: contentgroup/cqf-ruler
     volumes:
     # Shares configuration with the cqf-ruler
       - '../services/cqf-ruler/config:/var/lib/jetty/webapps/config:Z'
