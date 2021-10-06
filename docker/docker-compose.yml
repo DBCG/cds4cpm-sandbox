@@ -31,7 +31,7 @@ services:
   # CQF-Ruler
   ########################
   cqf-ruler:
-    image: contentgroup/cqf-ruler:develop
+    image: contentgroup/cqf-ruler
     environment:
       - "JAVA_OPTIONS=-Dhapi.properties.R4=/var/lib/jetty/target/config/r4.properties -Dhapi.properties.DSTU3=/var/lib/jetty/target/config/dstu3.properties"
     volumes:
