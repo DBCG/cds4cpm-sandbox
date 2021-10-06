@@ -33,7 +33,7 @@ services:
   # Smart Launcher
   ########################
   smart-launcher:
-    image: contentgroup/smart-launcher:develop
+    image: contentgroup/smart-launcher
     environment: 
       - "FHIR_SERVER_R4=http://cqf-ruler.localhost/cqf-ruler-r4/fhir"
       - "FHIR_SERVER_R3=http://cqf-ruler.localhost/cqf-ruler-dstu3/fhir"
