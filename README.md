@@ -52,7 +52,8 @@ docker-compose -f docker-compose.yml -f docker-compose.local.yml --compatibility
 
 The appropriate docker containers will be downloaded and started. It may take a several minutes for all the containers to download and start.
 
-***NOTE:*** On Windows Docker may ask to access your local hard-drive due to sample data and configuration being shared with the cqf-ruler from this repository. Please give Docker permissions to access the drive.
+***NOTE:*** On Windows Docker may ask to access your local hard-drive due to sample data and configuration being shared with the cqf-ruler from this repository. Please give Docker permissions to access the drive. 
+
 
 You can then browse the smart-launcher to select the correct applications and FHIR server by browsing
 
@@ -61,14 +62,50 @@ You can then browse the smart-launcher to select the correct applications and FH
 When you're done with the sandbox, the services can be stopped by pressing `Ctrl+C`. The services can then be deleted.
 
 ```bash
-docker-compose down
+docker-compose -f docker-compose.yml -f docker-compose.local.yml --compatibility --env-file ./config/.env down
 ```
 
 Detailed information on the `docker-compose` command can be found on the [Docker website](https://docs.docker.com/compose/)
 
 ### Using the Sandbox
 
-***NOTE:*** These steps require the use of the Chrome browser at the present time.
+***NOTE:*** These steps require the use of the Chrome browser at the present time. When operating locally, you may get a 'CORS' error in the patient picker (see image below). 
+
+![Launch Patient Selector](assets/corsError.png)
+
+To avoid CORS error, use the following script from terminal to open chrome with CORS disabled:
+
+MacOS:
+```bash
+open -n -a /Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome --args --user-data-dir="/tmp/chrome_dev_test" --disable-web-security
+```
+Windows (run as administrator):
+```bash
+"C:\Program Files (x86)\Google\Chrome\Application\chrome.exe" --disable-web-security --disable-gpu --user-data-dir=~/chromeTemp
+```
+Linux (replace 'username' with applicable user):
+```bash
+google-chrome --disable-web-security --user-data-dir=/home/username/tmp-chrome
+```
+#### Populating Patient
+
+sample patient bundle:
+[https://github.com/cqframework/cds4cpm/blob/master/input/bundles/sharon_decision.json](https://github.com/cqframework/cds4cpm/blob/master/input/bundles/sharon_decision.json)
+
+Perform an API POST at the following endpoint, and populate the body with raw json from sample patient:
+```html
+POST http://cloud.localhost/samplepath/r4/cqf-ruler/fhir
+```
+
+#### Populating Questionnaire
+
+Questionnaire Bundle:
+[https://github.com/cqframework/cds4cpm/blob/master/input/bundles/mypain-questionnaire.json](https://github.com/cqframework/cds4cpm/blob/master/input/bundles/mypain-questionnaire.json)
+
+Perform an API PUT at the following endpoint, and populate the body with raw json from questionnaire:
+```html
+PUT http://cloud.localhost/samplepath/r4/cqf-ruler/fhir/Questionnaire/mypain-questionnaire
+```
 
 #### Selecting a Patient
 
@@ -78,17 +115,11 @@ Open the Patient Selector by clicking the arrow as shown in the following image
 
 ![Launch Patient Selector](assets/patient-selector-launch.png)
 
-The Patient Selector will open. The Sandbox has been pre-populated with Brenda Jackson. Select a patient from the list and click "Ok" as shown in the following image
+The Patient Selector will open. Select a patient from the list and click "Ok" as shown in the following image
 
 ![Select Patient](assets/patient-select.png)
 
 #### Launching MyPain or PainManager
-
-Enter the launch url of MyPain or PainManager into the "Launch" box and click Launch as shown in the image below
-
-![Launch App](assets/app-launch.png)
-
-The launch urls are as follows:
 
 MyPain
 
@@ -96,7 +127,14 @@ MyPain
 
 PainManager
 
-`http://cloud.localhost/samplepath/my-pain/launch.html`
+`http://cloud.localhost/samplepath/pain-manager/launch.html`
+
+Enter the launch url of MyPain or PainManager into the "Launch" box and click Launch as shown in the image below
+
+![Launch App](assets/app-launch.png)
+
+The launch urls are as follows:
+
 
 #### Adding Additional Data
 
