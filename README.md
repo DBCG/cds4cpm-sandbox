@@ -123,6 +123,12 @@ The Patient Selector will open. Select a patient from the list and click "Ok" as
 
 ![Select Patient](assets/patient-select.png)
 
+#### Smart Launcher
+
+In order for my-pain/pain-manager url to appropriately launch, you will need to uncheck the "EHR" checkbox before launching my-pain/pain-manager. Otherwise this redirects
+
+![Select Patient](assets/UncheckEHR.png)
+
 #### Launching MyPain or PainManager
 
 The launch urls are as follows:
