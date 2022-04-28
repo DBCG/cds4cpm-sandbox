@@ -1,90 +1,133 @@
 version: '3.2'
 services:
-
+  # /samplepath/ is a replacement value
   ########################
   # MyPain
   ########################
   my-pain:
-    image: contentgroup/mypain:develop
+    image: contentgroup/mypain:latest
     ports:
       - "80"
-    # Tells the reverse proxy to expose the container of my-pain.localhost
+    # Tells the reverse proxy to expose the container of my-pain.EnvDomain
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.mypain.rule=Host(`my-pain.localhost`)"
+      - "traefik.http.routers.mypain.rule=PathPrefix(`/samplepath/my-pain`)"
       - "traefik.http.routers.mypain.entrypoints=web"
+      # might require app configs in env variables
+      - "traefik.http.routers.mypain.middlewares=mypain-prefix"
+      # processing rules for router
+      - "traefik.http.middlewares.mypain-prefix.stripprefix.prefixes=/samplepath/my-pain"
+    environment:
+      - PUBLIC_URL=/samplepath/my-pain
 
   ########################
   # PainManager
   ########################
   pain-manager:
-    image: contentgroup/painmanager:develop
+    image: contentgroup/painmanager:latest
     ports:
       - "80"
-    # Tells the reverse proxy to expose the container of pain-manager.localhost
+    # Tells the reverse proxy to expose the container of pain-manager.EnvDomain
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.painmanager.rule=Host(`pain-manager.localhost`)"
-      - "traefik.http.routers.painmanager.entrypoints=web"
+      - "traefik.http.routers.pain-manager.rule=PathPrefix(`/samplepath/pain-manager`)"
+      - "traefik.http.routers.pain-manager.entrypoints=web"
+      # might require app configs in env variables
+      - "traefik.http.routers.pain-manager.middlewares=pain-manager-prefix"
+      # processing rules for router
+      - "traefik.http.middlewares.pain-manager-prefix.stripprefix.prefixes=/samplepath/pain-manager"
+    environment:
+      - PUBLIC_URL=/samplepath/pain-manager
+      - CDS_URL=${PROTOCOL}://${HOST}${DOMAIN}/samplepath/r4/cqf-ruler/cds-services
 
   ########################
   # CQF-Ruler
   ########################
   cqf-ruler:
-    image: contentgroup/cqf-ruler
-    environment:
-      - "JAVA_OPTIONS=-Dhapi.properties.R4=/var/lib/jetty/target/config/r4.properties -Dhapi.properties.DSTU3=/var/lib/jetty/target/config/dstu3.properties"
-    volumes:
-    # Shares configuration with the cqf-ruler
-      - './config/cqf-ruler/config:/var/lib/jetty/target/config:ro'
-    # Shares sample data with the cqf-ruler
-      - './config/cqf-ruler/h2:/var/lib/jetty/target/database/h2:rw'
+    image: "alphora/cqf-ruler:latest"
+    restart: always
     ports:
       - "8080"
-    # Tells the reverse proxy to expose the container of cqf-ruler.localhost
-    links:
-      - "traefik:cqf-ruler.localhost"
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.cqf-ruler.rule=Host(`cqf-ruler.localhost`)"
+      - "traefik.http.routers.cqf-ruler.rule=PathPrefix(`/samplepath/r4/cqf-ruler`)"
       - "traefik.http.routers.cqf-ruler.entrypoints=web"
+      - "traefik.http.routers.cqf-ruler.middlewares=cqf-ruler-redirect,cqf-ruler-prefix,cqf-ruler-cors"
+      # processing rules for router
+      - "traefik.http.middlewares.cqf-ruler-prefix.stripprefix.prefixes=/samplepath/r4/cqf-ruler"
+      # match pattern and redirect to new url
+      - "traefik.http.middlewares.cqf-ruler-redirect.redirectregex.regex=^(.*)/samplepath/r4/cqf-ruler$$"
+      - "traefik.http.middlewares.cqf-ruler-redirect.redirectregex.replacement=$$1/samplepath/r4/cqf-ruler/"
+      # CORS (WIP)
+      - "traefik.http.middlewares.cqf-ruler-cors.headers.accesscontrolallowmethods=GET,OPTIONS"
+      - "traefik.http.middlewares.cqf-ruler-cors.headers.accesscontrolalloworigin=*"
+      - "traefik.http.middlewares.cqf-ruler-cors.headers.accesscontrolmaxage=86400"
+      - "traefik.http.middlewares.cqf-ruler-cors.headers.addvaryheader=true"
+    environment:
+      - HAPI_FHIR_SERVER_ADDRESS=${PROTOCOL}://${HOST}${DOMAIN}/samplepath/r4/cqf-ruler/fhir
+      - HAPI_FHIR_FHIR_VERSION=R4
+      - HAPI_FHIR_ENFORCE_REFERENTIAL_INTEGRITY_ON_WRITE=FALSE
+      - HAPI_FHIR_ENFORCE_REFERENTIAL_INTEGRITY_ON_DELETE=FALSE
+      - HAPI_FHIR_CR_MEASURE_REPORT_CARE_GAPS_REPORTER=Organization/alphora
+      - HAPI_FHIR_CR_MEASURE_REPORT_CARE_GAPS_COMPOSITION_SECTION_AUTHOR=Organization/alphora
+      - HAPI_FHIR_TESTER_HOME_SERVER_ADDRESS=${PROTOCOL}://${HOST}${DOMAIN}/samplepath/r4/cqf-ruler/fhir
 
   ########################
   # Smart Launcher
   ########################
   smart-launcher:
-    image: contentgroup/smart-launcher:develop
-    environment: 
-      - "FHIR_SERVER_R4=http://cqf-ruler.localhost/cqf-ruler-r4/fhir"
-      - "FHIR_SERVER_R3=http://cqf-ruler.localhost/cqf-ruler-dstu3/fhir"
-      - "CDS_SANDBOX_URL=http://smart-launcher.localhost"
-      - "BASE_URL=http://smart-launcher.localhost"
+    image: alphora/smart-launcher:latest
+    environment:
+      - "FHIR_SERVER_R4=${PROTOCOL}://${HOST}${DOMAIN}/samplepath/r4/cqf-ruler/fhir"
+      # "FHIR_SERVER_R3=${PROTOCOL}://${HOST}${DOMAIN}/samplepath/r4/cqf-ruler/fhir"
+      - "CDS_SANDBOX_URL=${PROTOCOL}://${HOST}${DOMAIN}/samplepath/smart-launcher"
+      - "BASE_URL=${PROTOCOL}://${HOST}${DOMAIN}/samplepath/smart-launcher"
     ports:
       - "80"
-    # Tells the reverse proxy to expose the container of smart-launcher.localhost
-    links:
-      - "traefik:cqf-ruler.localhost"
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.smart-launcher.rule=Host(`smart-launcher.localhost`)"
-      - "traefik.http.routers.smart-launcher.entrypoints=web"
+      - "traefik.http.routers.smartlauncher.rule=PathPrefix(`/samplepath/smart-launcher`)"
+      - "traefik.http.routers.smartlauncher.entrypoints=web"
+
+      - "traefik.http.routers.smartlauncher.middlewares=smartlauncher-redirect,smartlauncher-prefix"
+      - "traefik.http.middlewares.smartlauncher-prefix.stripprefix.prefixes=/samplepath/smart-launcher"
+      # match pattern and redirect to new url
+      - "traefik.http.middlewares.smartlauncher-redirect.redirectregex.regex=^(.*)/samplepath/smart-launcher$$"
+      - "traefik.http.middlewares.smartlauncher-redirect.redirectregex.replacement=$$1/samplepath/smart-launcher/"
 
   ########################
   # Traefik
   ########################
   traefik:
     image: "traefik:v2.2"
-    container_name: "traefik"
     command:
       - "--log.level=DEBUG"
       - "--api.insecure=true"
       - "--providers.docker=true"
       - "--providers.docker.exposedbydefault=false"
       - "--entrypoints.web.address=:80"
+      - "--entrypoints.web.forwardedHeaders.insecure=true"
     ports:
       - "80:80"
       - "8080:8080"
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
+    labels:
+      - "traefik.enable=true"
 
-  
+  ########################
+  # Dozzle
+  ########################
+  dozzle:
+    image: amir20/dozzle:latest
+    restart: always
+    ports:
+      - "8080"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.dozzle.rule=PathPrefix(`/samplepath/dashboard`)"
+      - "traefik.http.routers.dozzle.entrypoints=web"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - DOZZLE_BASE=/samplepath/dashboard
