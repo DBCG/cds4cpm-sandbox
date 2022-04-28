@@ -89,6 +89,8 @@ google-chrome --disable-web-security --user-data-dir=/home/username/tmp-chrome
 ```
 #### Populating Patient
 
+In order to select a patient from smart-launcher and use my-pain/pain-manager, you need to populate a patient record
+
 sample patient bundle:
 [https://github.com/cqframework/cds4cpm/blob/master/input/bundles/sharon_decision.json](https://github.com/cqframework/cds4cpm/blob/master/input/bundles/sharon_decision.json)
 
@@ -98,6 +100,8 @@ POST http://cloud.localhost/samplepath/r4/cqf-ruler/fhir
 ```
 
 #### Populating Questionnaire
+
+This step is required to get my-pain/pain-manager to function properly
 
 Questionnaire Bundle:
 [https://github.com/cqframework/cds4cpm/blob/master/input/bundles/mypain-questionnaire.json](https://github.com/cqframework/cds4cpm/blob/master/input/bundles/mypain-questionnaire.json)
