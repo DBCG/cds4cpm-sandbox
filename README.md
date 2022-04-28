@@ -158,46 +158,6 @@ Additionally, a GUI interface is provided at:
 
 [http://cloud.localhost/samplepath/r4/cqf-ruler](http://cloud.localhost/samplepath/r4/cqf-ruler)
 
-### Using the applications
-
-#### MyPAIN
-
-MyPAIN may be launched from within the Smart Launcher or from a browser.  When using the browser a uri may be used:
-
-[http://localhost:8000/launch.html?launch=eyJhIjoiMSIsImIiOiI1YzQxY2VjZi1jZjgxLTQzNGYtOWRhNy1lMjRlNWE5OWRiYzIiLCJlIjoiZWZiNWQ0Y2UtZGZmYy00N2RmLWFhNmQtMDVkMzcyZmRiNDA3IiwiZiI6IjEifQ==&iss=http://localhost:8080/cqf-ruler-r4/fhir](http://localhost:8000/launch.html?launch=eyJhIjoiMSIsImIiOiI1YzQxY2VjZi1jZjgxLTQzNGYtOWRhNy1lMjRlNWE5OWRiYzIiLCJlIjoiZWZiNWQ0Y2UtZGZmYy00N2RmLWFhNmQtMDVkMzcyZmRiNDA3IiwiZiI6IjEifQ==&iss=http://localhost:8080/cqf-ruler-r4/fhir)
-
-The launch parameter is base64 encoded string including curly braces: {"a":"1","b":"5c41cecf-cf81-434f-9da7-e24e5a99dbc2","e":"efb5d4ce-dffc-47df-aa6d-05d372fdb407","f":"1"}
-The 'b' variable is the patient id.  The "e" is the provider id.  On clicking the submit button the QuestionnaireResponse is stored on the fhir server provided at the end of the url.
-
-#### QuestionnaireResponse/$extract operation
-
-The extract operation takes a QuestionnaireResponse and returns a bundle of Observations from those responses.  An example QuestionniareResponse is  provided at:
-
-[https://github.com/cqframework/cds4cpm-mypain/blob/develop/examples/exampleQuestionnaireResponse.json](https://github.com/cqframework/cds4cpm-mypain/blob/develop/examples/exampleQuestionnaireResponse.json)
-
-Post the QuestionnaireResponse as the parameter named "questionnaireResponse" to the operation using a call such as 
-
-```html
-POST http://cloud.localhost/samplepath/r4/cqf-ruler/fhir/QuestionnaireResponse/$extract
-```  
-
-The resulting bundle of Observations will be posted to the questionnaireResponseExtract.endpoint set in the configuration file.
-
-#### Observation/$transform operation
-
-The transform operation takes a Parameters resource containing a BUndle of Observations and a ConceptMap url.  Examples of these can be found at:
-
-[https://github.com/cqframework/cds4cpm-mypain/blob/develop/examples/exampleObservationBundle.json](https://github.com/cqframework/cds4cpm-mypain/blob/develop/examples/exampleObservationBundle.json)
-
-[https://github.com/cqframework/cds4cpm-mypain/blob/develop/examples/exampleConceptMap.json](https://github.com/cqframework/cds4cpm-mypain/blob/develop/examples/exampleConceptMap.json)
-
-Post the Parameters to the operation:
-
-```html
-POST http://cloud.localhost/samplepath/r4/cqf-ruler/fhir/QuestionnaireResponse/$transform
-```  
-
-A Bundle of Observations is returned with site codes replacing the original codes for the values of the Observations or if "observationTransform.replaceCode=false" then the site codes will be added as a new Observation value code with the concept map's corresponding display value.
 
 ## Configuration
 
@@ -335,6 +295,39 @@ The sample data is stored in small H2 databases located at [docker/config/cqf-ru
 2. Post the required data to the cqf-ruler as described in [Adding Additional Data](#adding-additional-data).
 3. Stop the sandbox
 4. Commit the resulting changes to the database files to the repo.
+
+### Other Technical Features
+
+#### QuestionnaireResponse/$extract operation
+
+The extract operation takes a QuestionnaireResponse and returns a bundle of Observations from those responses.  An example QuestionniareResponse is  provided at:
+
+[https://github.com/cqframework/cds4cpm-mypain/blob/develop/examples/exampleQuestionnaireResponse.json](https://github.com/cqframework/cds4cpm-mypain/blob/develop/examples/exampleQuestionnaireResponse.json)
+
+Post the QuestionnaireResponse as the parameter named "questionnaireResponse" to the operation using a call such as
+
+```html
+POST http://cloud.localhost/samplepath/r4/cqf-ruler/fhir/QuestionnaireResponse/$extract
+```  
+
+The resulting bundle of Observations will be posted to the questionnaireResponseExtract.endpoint set in the configuration file.
+
+#### Observation/$transform operation
+
+The transform operation takes a Parameters resource containing a BUndle of Observations and a ConceptMap url.  Examples of these can be found at:
+
+[https://github.com/cqframework/cds4cpm-mypain/blob/develop/examples/exampleObservationBundle.json](https://github.com/cqframework/cds4cpm-mypain/blob/develop/examples/exampleObservationBundle.json)
+
+[https://github.com/cqframework/cds4cpm-mypain/blob/develop/examples/exampleConceptMap.json](https://github.com/cqframework/cds4cpm-mypain/blob/develop/examples/exampleConceptMap.json)
+
+Post the Parameters to the operation:
+
+```html
+POST http://cloud.localhost/samplepath/r4/cqf-ruler/fhir/QuestionnaireResponse/$transform
+```  
+
+A Bundle of Observations is returned with site codes replacing the original codes for the values of the Observations or if "observationTransform.replaceCode=false" then the site codes will be added as a new Observation value code with the concept map's corresponding display value.
+
 
 ### Resetting the Sandbox Data
 
