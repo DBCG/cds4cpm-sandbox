@@ -166,84 +166,6 @@ Additionally, a GUI interface is provided at:
 The primary source for documentation of the deployment of CQF-Ruler
  is located at the CQF-Ruler wiki on the [Deployment](https://github.com/DBCG/cqf-ruler/wiki/Deployment) page.
 
-For usage in the CDS4CPM sandbox several specific options need to be enabled:
-
-1. OAuth Redirection to an authorization server
-2. Questionnaire Response extraction
-3. Server base address
-
-All of these are enabled by setting properties in a configuration file. This configuration file is then mounted into the Docker container where the CQF-Ruler can read and load it.
-
-#### OAuth Redirection
-
-Adding the following lines to the configuration file enables OAuth Redirection
-
-```yaml
-##################################################
-# OAuth Settings
-##################################################
-oauth.enabled=true
-oauth.securityCors=true
-oauth.securityUrl=http://fhir-registry.smarthealthit.org/StructureDefinition/oauth-uris
-oauth.securityExtAuthUrl=authorize
-oauth.securityExtAuthValueUri=http://launch.smarthealthit.org/v/r4/auth/authorize
-oauth.securityExtTokenUrl=token
-oauth.securityExtTokenValueUri=http://launch.smarthealthit.org/v/r4/auth/token
-oauth.serviceSystem=http://hl7.org/fhir/restful-security-service
-oauth.serviceCode=SMART-on-FHIR
-oauth.serviceDisplay=SMART-on-FHIR
-oauth.serviceText=OAuth2 using SMART-on-FHIR profile (see http:?/docs.smarthealthit.org)
-```
-
-The links in the sample above use the SMART-on-FHIR launch application available at [http://launch.smarthealthit.org](http://launch.smarthealthit.org).
-
-In particular, the `oauth.securityUrl`, `oauth.securityExtAuthValueUri`, and `oauth.securityExtTokenValueUri` values will need to be set appropriately for your environment.
-
-#### QuestionnaireResponse Extraction
-
-Adding the following lines to the configuration file enables QuestionnaireResponse extraction.
-
-```yaml
-##################################################
-# QuestionnaireResponse Extraction Settings
-##################################################
-questionnaireResponseExtract.enabled=true
-questionnaireResponseExtract.endpoint=https://cds4cpm-develop.sandbox.alphora.com/cqf-ruler-r4/fhir
-questionnaireResponseExtract.username=
-questionnaireResponseExtract.password=
-```
-
-The `questionnaireResponseExtract.endpoint` is where the extracted Observation will be PUT. `questionnaireResponseExtract.username` and `questionnaireResponseExtract.password` are used to configure credentials for that endpoint.
-
-#### Observation code transformation
-
-Adding the following lines to the configuration file enables an Observation bundle to have it's codes transformed from one code system to another using a ConceptMap.
-
-```yaml
-##################################################
-# Observation Transformation Settings
-##################################################
-observationTransform.enabled=true
-observationTransform.username=
-observationTransform.password=
-observationTransform.replaceCode=false
-```
-
-The `observationTransform.enabled` turns on and off the operation.  The `observationTransform.replaceCode=false` does not replace the code in the Observation, but adds a new code to the Observation.
-
-#### Server Address
-
-These properties are inherited from the HAPI FHIR server.
-
-```yaml
-##################################################
-# Server Address
-##################################################
-server_address=http://cqf-ruler.localhost/cqf-ruler-dstu3/fhir/
-server.base=/cqf-ruler-dstu3/fhir
-```
-
-Working examples of the configurations files for the cqf-ruler are located in the [docker/config/cqf-ruler](docker/config/cqf-ruler) folder.
 
 #### Mounting Configuration Files
 
@@ -270,8 +192,8 @@ The FHIR servers available are set with environment variables:
 
 ```yaml
 environment:
-  - "FHIR_SERVER_R4=http://cqf-ruler.localhost/cqf-ruler-r4/fhir"
-  - "FHIR_SERVER_R3=http://cqf-ruler.localhost/cqf-ruler-dstu3/fhir"
+ - "FHIR_SERVER_R4=${PROTOCOL}://${HOST}${DOMAIN}/samplepath/r4/cqf-ruler/fhir"
+ # "FHIR_SERVER_R3=${PROTOCOL}://${HOST}${DOMAIN}/samplepath/r4/cqf-ruler/fhir"
 ```
 
 The base urls expected for the launcher are set with .env file and passed in to the compose file to set the path, 'samplepath' is used as a temporary placeholder:
