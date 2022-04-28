@@ -125,6 +125,8 @@ The Patient Selector will open. Select a patient from the list and click "Ok" as
 
 #### Launching MyPain or PainManager
 
+The launch urls are as follows:
+
 MyPain
 
 `http://cloud.localhost/samplepath/my-pain/launch.html`
@@ -136,8 +138,6 @@ PainManager
 Enter the launch url of MyPain or PainManager into the "Launch" box and click Launch as shown in the image below
 
 ![Launch App](assets/app-launch.png)
-
-The launch urls are as follows:
 
 
 #### Adding Additional Data
