@@ -46,6 +46,7 @@ services:
   cqf-ruler:
     image: "alphora/cqf-ruler:latest"
     restart: always
+
     ports:
       - "8080"
     labels:
@@ -82,6 +83,7 @@ services:
       # "FHIR_SERVER_R3=${PROTOCOL}://${HOST}${DOMAIN}/samplepath/r4/cqf-ruler/fhir"
       - "CDS_SANDBOX_URL=${PROTOCOL}://${HOST}${DOMAIN}/samplepath/smart-launcher"
       - "BASE_URL=${PROTOCOL}://${HOST}${DOMAIN}/samplepath/smart-launcher"
+
     ports:
       - "80"
     labels:
