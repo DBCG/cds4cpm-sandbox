@@ -27,13 +27,13 @@ The [docker-compose.yml](docker/docker-compose.yml) file documents how each of t
 
 The various services are available at:
 
-[http://smart-launcher.localhost](http://smart-launcher.localhost)
+[http://cloud.localhost/samplepath/smart-launcher](http://cloud.localhost/samplepath/smart-launcher)
 
-[http://my-pain.localhost](http://my-pain.localhost)
+[http://cloud.localhost/samplepath/my-pain](http://cloud.localhost/samplepath/my-pain)
 
-[http://pain-manager.localhost](http://pain-manager.localhost)
+[http://cloud.localhost/samplepath/pain-manager](http://cloud.localhost/samplepath/pain-manager)
 
-[http://cqf-ruler.localhost](http://pain-manager.localhost)
+[http://cloud.localhost/samplepath/r4/cqf-ruler](http://cloud.localhost/samplepath/r4/cqf-ruler)
 
 The relevant configuration options that are used for each service are documented below.
 
@@ -46,110 +46,118 @@ This project uses a docker-compose file to do all of the above configuration for
 From the /docker directory, run:
 
 ```bash
-docker-compose pull
-docker-compose up
+docker-compose -f docker-compose.yml -f docker-compose.local.yml --compatibility --env-file ./config/.env pull
+docker-compose -f docker-compose.yml -f docker-compose.local.yml --compatibility --env-file ./config/.env up -d --remove-orphans
 ```
 
 The appropriate docker containers will be downloaded and started. It may take a several minutes for all the containers to download and start.
 
-***NOTE:*** On Windows Docker may ask to access your local hard-drive due to sample data and configuration being shared with the cqf-ruler from this repository. Please give Docker permissions to access the drive.
+***NOTE:*** On Windows Docker may ask to access your local hard-drive due to sample data and configuration being shared with the cqf-ruler from this repository. Please give Docker permissions to access the drive. 
+
 
 You can then browse the smart-launcher to select the correct applications and FHIR server by browsing
 
-[http://smart-launcher.localhost](http://smart-launcher.localhost)
+[http://cloud.localhost/samplepath/smart-launcher](http://cloud.localhost/samplepath/smart-launcher)
 
 When you're done with the sandbox, the services can be stopped by pressing `Ctrl+C`. The services can then be deleted.
 
 ```bash
-docker-compose down
+docker-compose -f docker-compose.yml -f docker-compose.local.yml --compatibility --env-file ./config/.env down
 ```
 
 Detailed information on the `docker-compose` command can be found on the [Docker website](https://docs.docker.com/compose/)
 
 ### Using the Sandbox
 
-***NOTE:*** These steps require the use of the Chrome browser at the present time.
+***NOTE:*** These steps require the use of the Chrome browser at the present time. When operating locally, you may get a 'CORS' error in the patient picker (see image below). 
+
+![Launch Patient Selector](assets/corsError.png)
+
+To avoid CORS error, use the following script from terminal to open chrome with CORS disabled:
+
+MacOS:
+```bash
+open -n -a /Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome --args --user-data-dir="/tmp/chrome_dev_test" --disable-web-security
+```
+Windows (run as administrator):
+```bash
+"C:\Program Files (x86)\Google\Chrome\Application\chrome.exe" --disable-web-security --disable-gpu --user-data-dir=~/chromeTemp
+```
+Linux (replace 'username' with applicable user):
+```bash
+google-chrome --disable-web-security --user-data-dir=/home/username/tmp-chrome
+```
+#### Populating Patient
+
+In order to select a patient from smart-launcher and use my-pain/pain-manager, you need to populate a patient record
+
+sample patient bundle:
+[https://github.com/cqframework/cds4cpm/blob/master/input/bundles/sharon_decision.json](https://github.com/cqframework/cds4cpm/blob/master/input/bundles/sharon_decision.json)
+
+Perform an API POST at the following endpoint, and populate the body with raw json from sample patient:
+```html
+POST http://cloud.localhost/samplepath/r4/cqf-ruler/fhir
+```
+
+#### Populating Questionnaire
+
+This step is required to get my-pain/pain-manager to function properly
+
+Questionnaire Bundle:
+[https://github.com/cqframework/cds4cpm/blob/master/input/bundles/mypain-questionnaire.json](https://github.com/cqframework/cds4cpm/blob/master/input/bundles/mypain-questionnaire.json)
+
+Perform an API PUT at the following endpoint, and populate the body with raw json from questionnaire:
+```html
+PUT http://cloud.localhost/samplepath/r4/cqf-ruler/fhir/Questionnaire/mypain-questionnaire
+```
 
 #### Selecting a Patient
 
-Browse to [http://smart-launcher.localhost](http://smart-launcher.localhost)
+Browse to [http://cloud.localhost/samplepath/smart-launcher](http://cloud.localhost/samplepath/smart-launcher)
 
 Open the Patient Selector by clicking the arrow as shown in the following image
 
 ![Launch Patient Selector](assets/patient-selector-launch.png)
 
-The Patient Selector will open. The Sandbox has been pre-populated with Brenda Jackson. Select a patient from the list and click "Ok" as shown in the following image
+The Patient Selector will open. Select a patient from the list and click "Ok" as shown in the following image
 
 ![Select Patient](assets/patient-select.png)
 
+#### Smart Launcher
+
+In order for my-pain/pain-manager url to appropriately launch, you will need to uncheck the "EHR" checkbox before launching my-pain/pain-manager. Otherwise this redirects
+
+![Select Patient](assets/UncheckEHR.png)
+
 #### Launching MyPain or PainManager
-
-Enter the launch url of MyPain or PainManager into the "Launch" box and click Launch as shown in the image below
-
-![Launch App](assets/app-launch.png)
 
 The launch urls are as follows:
 
 MyPain
 
-`http://my-pain.localhost/launch.html`
+`http://cloud.localhost/samplepath/my-pain/launch.html`
 
 PainManager
 
-`http://pain-manager.localhost/launch.html`
+`http://cloud.localhost/samplepath/pain-manager/launch.html`
+
+Enter the launch url of MyPain or PainManager into the "Launch" box and click Launch as shown in the image below
+
+![Launch App](assets/app-launch.png)
+
 
 #### Adding Additional Data
 
 The cqf-ruler implements a FHIR Rest API with support for creating, updating, and deleting resources. This endpoint is available at:
 
-`http://cqf-ruler.localhost/cqf-ruler-r4/fhir`
+`http://cloud.localhost/samplepath/r4/cqf-ruler/fhir`
 
 Instructions on how to load new Resources are available at the [Resource Loading](https://github.com/DBCG/cqf-ruler/wiki/Resource-Loading) page on the cqf-ruler wiki.
 
 Additionally, a GUI interface is provided at:
 
-[http://cqf-ruler.localhost/cqf-ruler-r4](http://cqf-ruler.localhost/cqf-ruler-r4)
+[http://cloud.localhost/samplepath/r4/cqf-ruler](http://cloud.localhost/samplepath/r4/cqf-ruler)
 
-### Using the applications
-
-#### MyPAIN
-
-MyPAIN may be launched from within the Smart Launcher or from a browser.  When using the browser a uri may be used:
-
-[http://localhost:8000/launch.html?launch=eyJhIjoiMSIsImIiOiI1YzQxY2VjZi1jZjgxLTQzNGYtOWRhNy1lMjRlNWE5OWRiYzIiLCJlIjoiZWZiNWQ0Y2UtZGZmYy00N2RmLWFhNmQtMDVkMzcyZmRiNDA3IiwiZiI6IjEifQ==&iss=http://localhost:8080/cqf-ruler-r4/fhir](http://localhost:8000/launch.html?launch=eyJhIjoiMSIsImIiOiI1YzQxY2VjZi1jZjgxLTQzNGYtOWRhNy1lMjRlNWE5OWRiYzIiLCJlIjoiZWZiNWQ0Y2UtZGZmYy00N2RmLWFhNmQtMDVkMzcyZmRiNDA3IiwiZiI6IjEifQ==&iss=http://localhost:8080/cqf-ruler-r4/fhir)
-
-The launch parameter is base64 encoded string including curly braces: {"a":"1","b":"5c41cecf-cf81-434f-9da7-e24e5a99dbc2","e":"efb5d4ce-dffc-47df-aa6d-05d372fdb407","f":"1"}
-The 'b' variable is the patient id.  The "e" is the provider id.  On clicking the submit button the QuestionnaireResponse is stored on the fhir server provided at the end of the url.
-
-#### QuestionnaireResponse/$extract operation
-
-The extract operation takes a QuestionnaireResponse and returns a bundle of Observations from those responses.  An example QuestionniareResponse is  provided at:
-
-[https://github.com/cqframework/cds4cpm-mypain/blob/develop/examples/exampleQuestionnaireResponse.json](https://github.com/cqframework/cds4cpm-mypain/blob/develop/examples/exampleQuestionnaireResponse.json)
-
-Post the QuestionnaireResponse as the parameter named "questionnaireResponse" to the operation using a call such as 
-
-```html
-POST http://cqf-ruler.localhost/cqf-ruler-r4/fhir/QuestionnaireResponse/$extract
-```  
-
-The resulting bundle of Observations will be posted to the questionnaireResponseExtract.endpoint set in the configuration file.
-
-#### Observation/$transform operation
-
-The transform operation takes a Parameters resource containing a BUndle of Observations and a ConceptMap url.  Examples of these can be found at:
-
-[https://github.com/cqframework/cds4cpm-mypain/blob/develop/examples/exampleObservationBundle.json](https://github.com/cqframework/cds4cpm-mypain/blob/develop/examples/exampleObservationBundle.json)
-
-[https://github.com/cqframework/cds4cpm-mypain/blob/develop/examples/exampleConceptMap.json](https://github.com/cqframework/cds4cpm-mypain/blob/develop/examples/exampleConceptMap.json)
-
-Post the Parameters to the operation:
-
-```html
-POST http://cqf-ruler.localhost/cqf-ruler-r4/fhir/QuestionnaireResponse/$transform
-```  
-
-A Bundle of Observations is returned with site codes replacing the original codes for the values of the Observations or if "observationTransform.replaceCode=false" then the site codes will be added as a new Observation value code with the concept map's corresponding display value.
 
 ## Configuration
 
@@ -158,84 +166,6 @@ A Bundle of Observations is returned with site codes replacing the original code
 The primary source for documentation of the deployment of CQF-Ruler
  is located at the CQF-Ruler wiki on the [Deployment](https://github.com/DBCG/cqf-ruler/wiki/Deployment) page.
 
-For usage in the CDS4CPM sandbox several specific options need to be enabled:
-
-1. OAuth Redirection to an authorization server
-2. Questionnaire Response extraction
-3. Server base address
-
-All of these are enabled by setting properties in a configuration file. This configuration file is then mounted into the Docker container where the CQF-Ruler can read and load it.
-
-#### OAuth Redirection
-
-Adding the following lines to the configuration file enables OAuth Redirection
-
-```yaml
-##################################################
-# OAuth Settings
-##################################################
-oauth.enabled=true
-oauth.securityCors=true
-oauth.securityUrl=http://fhir-registry.smarthealthit.org/StructureDefinition/oauth-uris
-oauth.securityExtAuthUrl=authorize
-oauth.securityExtAuthValueUri=http://launch.smarthealthit.org/v/r4/auth/authorize
-oauth.securityExtTokenUrl=token
-oauth.securityExtTokenValueUri=http://launch.smarthealthit.org/v/r4/auth/token
-oauth.serviceSystem=http://hl7.org/fhir/restful-security-service
-oauth.serviceCode=SMART-on-FHIR
-oauth.serviceDisplay=SMART-on-FHIR
-oauth.serviceText=OAuth2 using SMART-on-FHIR profile (see http:?/docs.smarthealthit.org)
-```
-
-The links in the sample above use the SMART-on-FHIR launch application available at [http://launch.smarthealthit.org](http://launch.smarthealthit.org).
-
-In particular, the `oauth.securityUrl`, `oauth.securityExtAuthValueUri`, and `oauth.securityExtTokenValueUri` values will need to be set appropriately for your environment.
-
-#### QuestionnaireResponse Extraction
-
-Adding the following lines to the configuration file enables QuestionnaireResponse extraction.
-
-```yaml
-##################################################
-# QuestionnaireResponse Extraction Settings
-##################################################
-questionnaireResponseExtract.enabled=true
-questionnaireResponseExtract.endpoint=https://cds4cpm-develop.sandbox.alphora.com/cqf-ruler-r4/fhir
-questionnaireResponseExtract.username=
-questionnaireResponseExtract.password=
-```
-
-The `questionnaireResponseExtract.endpoint` is where the extracted Observation will be PUT. `questionnaireResponseExtract.username` and `questionnaireResponseExtract.password` are used to configure credentials for that endpoint.
-
-#### Observation code transformation
-
-Adding the following lines to the configuration file enables an Observation bundle to have it's codes transformed from one code system to another using a ConceptMap.
-
-```yaml
-##################################################
-# Observation Transformation Settings
-##################################################
-observationTransform.enabled=true
-observationTransform.username=
-observationTransform.password=
-observationTransform.replaceCode=false
-```
-
-The `observationTransform.enabled` turns on and off the operation.  The `observationTransform.replaceCode=false` does not replace the code in the Observation, but adds a new code to the Observation.
-
-#### Server Address
-
-These properties are inherited from the HAPI FHIR server.
-
-```yaml
-##################################################
-# Server Address
-##################################################
-server_address=http://cqf-ruler.localhost/cqf-ruler-dstu3/fhir/
-server.base=/cqf-ruler-dstu3/fhir
-```
-
-Working examples of the configurations files for the cqf-ruler are located in the [docker/config/cqf-ruler](docker/config/cqf-ruler) folder.
 
 #### Mounting Configuration Files
 
@@ -253,24 +183,6 @@ Docker also supports setting environment variables for a container. The syntax f
 docker run -e ENV_VARIABLE=value fooContainer
 ```
 
-The CQF-Ruler reads the JAVA_OPTIONS environment variable to determine where it should look for configuration, like so:
-
-```bash
-docker run -e JAVA_OPTIONS='-Dhapi.properties.R4=/path/to/custom/r4.properties, -Dhapi.properties.DSTU3=/path/to/custom/dstu3.properties'
-```
-
-where `/path/to/custom` is some location inside of the cqf-ruler docker container.
-
-Once you have created the appropriate configuration files you combine both of these options to mount the config files into the container from the host system and have the CQF-Ruler read them.
-
-```bash
-docker run \
---v ./config/cqf-ruler:/var/lib/jetty/target \
--e JAVA_OPTIONS='-Dhapi.properties.R4=/var/lib/jetty/target/r4.properties, -Dhapi.properties.DSTU3=/var/lib/jetty/target/dstu3.properties' \
-contentgroup/cqf-ruler:develop
-```
-
-Docker-compose provides a succinct syntax of setting these types of options across multiple containers. This can be seen the in the [docker-compose.yml](docker/docker-compose.yml) file.
 
 ### Smart Launcher
 
@@ -280,16 +192,15 @@ The FHIR servers available are set with environment variables:
 
 ```yaml
 environment:
-  - "FHIR_SERVER_R4=http://cqf-ruler.localhost/cqf-ruler-r4/fhir"
-  - "FHIR_SERVER_R3=http://cqf-ruler.localhost/cqf-ruler-dstu3/fhir"
+ - "FHIR_SERVER_R4=${PROTOCOL}://${HOST}${DOMAIN}/samplepath/r4/cqf-ruler/fhir"
+ # "FHIR_SERVER_R3=${PROTOCOL}://${HOST}${DOMAIN}/samplepath/r4/cqf-ruler/fhir"
 ```
 
-The base urls expected for the launcher are set with the BASE_URL and CDS_SANDBOX_URL environment variables:
+The base urls expected for the launcher are set with .env file and passed in to the compose file to set the path, 'samplepath' is used as a temporary placeholder:
 
 ```yaml
-  environment: 
-    - "CDS_SANDBOX_URL=http://smart-launcher.localhost"
-    - "BASE_URL=http://smart-launcher.localhost"
+  environment:
+   - HAPI_FHIR_SERVER_ADDRESS=${PROTOCOL}://${HOST}${DOMAIN}/samplepath/r4/cqf-ruler/fhir
 ```
 
 This configuration is demonstrated in the in the [docker-compose.yml](docker/docker-compose.yml) file.
@@ -306,6 +217,39 @@ The sample data is stored in small H2 databases located at [docker/config/cqf-ru
 2. Post the required data to the cqf-ruler as described in [Adding Additional Data](#adding-additional-data).
 3. Stop the sandbox
 4. Commit the resulting changes to the database files to the repo.
+
+### Other Technical Features
+
+#### QuestionnaireResponse/$extract operation
+
+The extract operation takes a QuestionnaireResponse and returns a bundle of Observations from those responses.  An example QuestionniareResponse is  provided at:
+
+[https://github.com/cqframework/cds4cpm-mypain/blob/develop/examples/exampleQuestionnaireResponse.json](https://github.com/cqframework/cds4cpm-mypain/blob/develop/examples/exampleQuestionnaireResponse.json)
+
+Post the QuestionnaireResponse as the parameter named "questionnaireResponse" to the operation using a call such as
+
+```html
+POST http://cloud.localhost/samplepath/r4/cqf-ruler/fhir/QuestionnaireResponse/$extract
+```  
+
+The resulting bundle of Observations will be posted to the questionnaireResponseExtract.endpoint set in the configuration file.
+
+#### Observation/$transform operation
+
+The transform operation takes a Parameters resource containing a BUndle of Observations and a ConceptMap url.  Examples of these can be found at:
+
+[https://github.com/cqframework/cds4cpm-mypain/blob/develop/examples/exampleObservationBundle.json](https://github.com/cqframework/cds4cpm-mypain/blob/develop/examples/exampleObservationBundle.json)
+
+[https://github.com/cqframework/cds4cpm-mypain/blob/develop/examples/exampleConceptMap.json](https://github.com/cqframework/cds4cpm-mypain/blob/develop/examples/exampleConceptMap.json)
+
+Post the Parameters to the operation:
+
+```html
+POST http://cloud.localhost/samplepath/r4/cqf-ruler/fhir/QuestionnaireResponse/$transform
+```  
+
+A Bundle of Observations is returned with site codes replacing the original codes for the values of the Observations or if "observationTransform.replaceCode=false" then the site codes will be added as a new Observation value code with the concept map's corresponding display value.
+
 
 ### Resetting the Sandbox Data
 

@@ -1,0 +1,9 @@
+version: '3.2'
+services:
+  cqf-ruler:
+    links:
+      - "traefik:${HOST}${DOMAIN}"
+
+  smart-launcher:
+    links:
+      - "traefik:${HOST}${DOMAIN}"
