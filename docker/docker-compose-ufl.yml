@@ -1,0 +1,159 @@
+version: '3.2'
+services:
+
+  ########################
+  # MyPain
+  ########################
+  my-pain:
+    platform: linux
+    image: alphora/my-pain:v0.5.0
+    ports:
+      - "80"
+    # Tells the reverse proxy to expose the container of my-pain.EnvDomain
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.my-pain.rule=PathPrefix(`/ufl/my-pain`)"
+      - "traefik.http.routers.my-pain.entrypoints=web"
+      # might require app configs in env variables
+      - "traefik.http.routers.my-pain.middlewares=my-pain-prefix"
+      # processing rules for router
+      - "traefik.http.middlewares.my-pain-prefix.stripprefix.prefixes=/ufl/my-pain"
+    environment:
+      - PUBLIC_URL=/ufl/my-pain
+
+  ########################
+  # PainManager
+  ########################
+  pain-manager:
+    platform: linux
+    image: alphora/pain-manager:v0.10.0
+    ports:
+      - "80"
+    # Tells the reverse proxy to expose the container of pain-manager.EnvDomain
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.pain-manager.rule=PathPrefix(`/ufl/pain-manager`)"
+      - "traefik.http.routers.pain-manager.entrypoints=web"
+      # might require app configs in env variables
+      - "traefik.http.routers.pain-manager.middlewares=pain-manager-prefix"
+      # processing rules for router
+      - "traefik.http.middlewares.pain-manager-prefix.stripprefix.prefixes=/ufl/pain-manager"
+    environment:
+      - PUBLIC_URL=/ufl/pain-manager
+      - CDS_URL=${PROTOCOL}://${HOST}${DOMAIN}/ufl/r4/cqf-ruler/cds-services
+
+  ########################
+  # CQF-Ruler
+  ########################
+  cqf-ruler:
+    platform: linux
+    image: "alphora/cqf-ruler:latest"
+    restart: always
+    ports:
+      - "8080"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.cqf-ruler.rule=PathPrefix(`/ufl/r4/cqf-ruler`)"
+      - "traefik.http.routers.cqf-ruler.entrypoints=web"
+      - "traefik.http.routers.cqf-ruler.middlewares=cqf-ruler-redirect,cqf-ruler-prefix,cqf-ruler-cors"
+      # processing rules for router
+      - "traefik.http.middlewares.cqf-ruler-prefix.stripprefix.prefixes=/ufl/r4/cqf-ruler"
+      # match pattern and redirect to new url
+      - "traefik.http.middlewares.cqf-ruler-redirect.redirectregex.regex=^(.*)/ufl/r4/cqf-ruler$$"
+      - "traefik.http.middlewares.cqf-ruler-redirect.redirectregex.replacement=$$1/ufl/r4/cqf-ruler/"
+      # CORS (WIP)
+      - "traefik.http.middlewares.cqf-ruler-cors.headers.accesscontrolallowmethods=GET,OPTIONS"
+      - "traefik.http.middlewares.cqf-ruler-cors.headers.accesscontrolalloworigin=*"
+      - "traefik.http.middlewares.cqf-ruler-cors.headers.accesscontrolmaxage=86400"
+      - "traefik.http.middlewares.cqf-ruler-cors.headers.addvaryheader=true"
+    environment:
+      - HAPI_FHIR_SERVER_ADDRESS=${PROTOCOL}://${HOST}${DOMAIN}/ufl/r4/cqf-ruler/fhir
+      - HAPI_FHIR_FHIR_VERSION=R4
+      - HAPI_FHIR_ENFORCE_REFERENTIAL_INTEGRITY_ON_WRITE=FALSE
+      - HAPI_FHIR_ENFORCE_REFERENTIAL_INTEGRITY_ON_DELETE=FALSE
+      #      - HAPI_FHIR_CQL_CQL_LOGGING_ENABLED=TRUE
+      - HAPI_FHIR_TESTER_HOME_SERVER_ADDRESS=${PROTOCOL}://${HOST}${DOMAIN}/ufl/r4/cqf-ruler/fhir
+
+  ########################
+  # Smart Launcher
+  ########################
+  smart-launcher:
+    platform: linux
+    image: alphora/smart-launcher:latest
+    environment:
+      - "FHIR_SERVER_R4=${PROTOCOL}://${HOST}${DOMAIN}/ufl/r4/cqf-ruler/fhir"
+      # "FHIR_SERVER_R3=${PROTOCOL}://${HOST}${DOMAIN}/ufl/r4/cqf-ruler/fhir"
+      - "CDS_SANDBOX_URL=${PROTOCOL}://${HOST}${DOMAIN}/ufl/smart-launcher"
+      - "BASE_URL=${PROTOCOL}://${HOST}${DOMAIN}/ufl/smart-launcher"
+    ports:
+      - "80"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.smartlauncher.rule=PathPrefix(`/ufl/smart-launcher`)"
+      - "traefik.http.routers.smartlauncher.entrypoints=web"
+
+      - "traefik.http.routers.smartlauncher.middlewares=smartlauncher-redirect,smartlauncher-prefix"
+      - "traefik.http.middlewares.smartlauncher-prefix.stripprefix.prefixes=/ufl/smart-launcher"
+      # match pattern and redirect to new url
+      - "traefik.http.middlewares.smartlauncher-redirect.redirectregex.regex=^(.*)/ufl/smart-launcher$$"
+      - "traefik.http.middlewares.smartlauncher-redirect.redirectregex.replacement=$$1/ufl/smart-launcher/"
+
+  ########################
+  # Traefik
+  ########################
+  traefik:
+    platform: linux
+    image: "traefik:v2.2"
+    command:
+      - "--log.level=DEBUG"
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.web.forwardedHeaders.insecure=true"
+    ports:
+      - "80:80"
+      - "8080:8080"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+    labels:
+      - "traefik.enable=true"
+
+  ########################
+  # Dozzle
+  ########################
+  dozzle:
+    platform: linux
+    image: amir20/dozzle:latest
+    restart: always
+    ports:
+      - "8080"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.dozzle.rule=PathPrefix(`/ufl/dashboard`)"
+      - "traefik.http.routers.dozzle.entrypoints=web"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - DOZZLE_BASE=/ufl/dashboard
+
+  ########################
+  # initialize ruler with test/demo data
+  ########################
+  ufl-sandbox-init:
+    platform: linux
+    image: "curlimages/curl"
+    container_name: "ufl-sandbox-init"
+    depends_on:
+      - cqf-ruler
+    environment:
+      - BASE_URL=${PROTOCOL}://${HOST}${DOMAIN}/ufl/smart-launcher/v/r4/cqf-ruler/fhir
+    volumes:
+      - './services/ufl-sandbox/init/load-content.sh:/home/curl_user/load-content.sh'
+    command:
+      - "sh"
+      - "home/curl_user/load-content.sh"
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
